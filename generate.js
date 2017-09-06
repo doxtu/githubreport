@@ -3,7 +3,6 @@
 	Generate formatted HTML output for all passed data
 */
 
-
 const request = require("./request.js");
 const fs = require("fs");
 
