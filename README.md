@@ -1,8 +1,7 @@
-GITHUBREPORT
-============
+GITHUB REPORT GENERATOR
+========================
 
-GENERATES REPOSITORY REPORTS
-This is for a personal pet project.
+This is a personal pet project.
 
 Problem statement
 ------------------
@@ -10,10 +9,10 @@ Problem statement
 Given a list of github repos, perform the following steps:
 
 Given a user/repo combo, pull data for the following (once as a GitHub API, and once with a web scraper):
-*Commit history
-*Issues
-*Contributors
-*Owner
+ * Commit history
+ * Issues
+ * Contributors
+ * Owner
 
 Format the data into a easily readable report.
 
