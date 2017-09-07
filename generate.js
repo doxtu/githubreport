@@ -5,7 +5,6 @@
 const https = require("https");
 const fs = require("fs");
 const api = "api.github.com";
-const fs = require("fs");
 const types = [
 	"commits",
 	"issues",
@@ -23,7 +22,7 @@ repos.forEach(function(elt,i){
 });
 
 //create document headers
-const headerStr = '<!DOCTYPE html>\n<head>\n<meta charset="utf-8">\n<title>Repo report</title>\n</head>\n';
+const headerStr = '<!DOCTYPE html>\n<head>\n<meta charset="utf-8">\n<title>Repo report</title>\n</head>\n<body>';
 fs.writeFileSync("report.html",headerStr,"utf-8");
 
 repos.forEach(function(repo){
@@ -37,7 +36,7 @@ repos.forEach(function(repo){
 //create stylesheet
 
 function requestData(owner,repo){
-	let path = "/repos/"+ owner + "/" + repo + "/" + type;
+	let path = "/repos/"+ owner + "/" + repo;
 	
 	const options = {
 		hostname: api,
@@ -48,21 +47,70 @@ function requestData(owner,repo){
 			"Accept": "application/vnd.github.v3+json"
 		}
 	};
-
-	const req = https.request(options, (res) => {
-		res.on('data', (d) => {
-			
+	
+	new Promise(function(s,f){
+		let path1 = path + "contributors";
+		fs.writeFileSync("data1.json","","utf-8");
+		const req = https.request(options,(res)=>{
+			res.on("data",(d)=>{
+				fs.appendFileSync("data1.json",d,"utf-8");
+			});
+			res.on("end",()=>{
+				s();
+			});
 		});
-		res.on("end",generateReport);
-	});
-
-	req.on('error', (e) => {
-		console.error(e);
-	});
-	req.end();
+		
+		req.on("error",(e)=>{
+			console.log(e);
+			f();
+		});
+		req.end();
+	})
+	.then(
+		new Promise(function(s,f){
+			let path2 = path + "commits";
+			fs.writeFileSync("data2.json","","utf-8");
+			const req = https.request(options,(res)=>{
+				res.on("data",(d)=>{
+					fs.appendFileSync("data2.json",d,"utf-8");
+				});
+				res.on("end",()=>{
+					s();
+				});
+			});
+			
+			req.on("error",(e)=>{
+				console.log(e);
+				f();
+			});		
+			
+			req.end();
+		})
+		.then(
+			new Promise(function(s,f){ 
+				let path3 = path + "issues";
+				fs.writeFileSync("data3.json","","utf-8");
+				const req = https.request(options,(res)=>{
+					res.on("data",(d)=>{
+						fs.appendFileSync("data3.json",d,"utf-8");
+					});
+					res.on("end",()=>{
+						s();
+					});
+				});
+				
+				req.on("error",(e)=>{
+					console.log(e);
+					f();
+				});		
+				req.end();
+			})
+			.then(generateReport)
+		)
+	);
 	
 	function generateReport(){
-		let html = "";
+		var html = "";
 		html += "<h1>" + owner + "/" + repo + "</h1>\n";
 		html += "<table>\n<caption>contributors</caption><tr>\n<th>login</th><th>contributions</th>\n</tr>";
 		fs.appendFileSync("report.html",html,"utf-8");
