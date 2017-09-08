@@ -115,12 +115,17 @@ function requestData(owner,repo){
 	);
 	
 	function generateReport(){
-		var html = "";
-		const contrib = JSON.parse(fs.readFileSync("contrib.json","utf-8"));
-		html += "<h1>" + owner + "/" + repo + "</h1>\n";
-		html += "<table>\n<caption>contributors</caption><tr>\n<th>login</th><th>contributions</th>\n</tr>";
-		html += "</table>";
-		fs.appendFileSync("report.html",html,"utf-8");
+		return new Promise(function(s,f){
+			var html = "";
+			const contrib = JSON.parse(fs.readFileSync("contrib.json","utf-8"));
+			html += "<h1>" + owner + "/" + repo + "</h1>\n";
+			//contributor table
+			html += "<table>\n<caption>contributors</caption><tr>\n<th>login</th><th>site admin</th>\n</tr>";
+			html += "<tr>\n<td>" + contrib.owner.login + "</td>\n" + "<td>" + contrib.owner.site_admin + "</td>\n" + "</tr>\n";
+			html += ""
+			html += "</table>";
+			fs.appendFileSync("report.html",html,"utf-8");				
+		});
 	}
 }
 
