@@ -15,6 +15,10 @@ const types = [
 	"contributors"
 ];
 
+//create document headers
+const headerStr = '<!DOCTYPE html>\n<head>\n<meta charset="utf-8">\n<title>Repo report</title>\n</head>\n<body>';
+fs.writeFileSync("report.html",headerStr,"utf-8");
+
 let repos = fs.readFileSync("./repos.csv","UTF-8").split("\n").splice(1,2);
 repos.forEach(function(elt,i){
 	let a = elt.length-1;
@@ -24,24 +28,20 @@ repos.forEach(function(elt,i){
 	repos[i][1] = repos[i][1].split("").splice(repoIndex,b).join("");
 });
 
-//create document headers
-const headerStr = '<!DOCTYPE html>\n<head>\n<meta charset="utf-8">\n<title>Repo report</title>\n</head>\n<body>';
-fs.writeFileSync("report.html",headerStr,"utf-8");
-
-repos.forEach(function(repo){
-	const owner = repo[0];
-	const name = repo[1];
-	requestData(owner,name);
-});
-
+requestData();
 //create document tab closers
 
 //create stylesheet
 
-function requestData(owner,repo){
+function requestData(){
+	if(repos.length === 0) return;
+	console.log(1);
+	let repoData = repos.pop();
+	const owner = repoData[0];
+	const repo = repoData[1];
 	let path = "/repos/"+ owner + "/" + repo;
-	const clientId = "";
-	const clientSecret = "";
+	const clientId = "1904fddc7d92ebb6d8f5";
+	const clientSecret = "6a11c03afbc2c40a721d5d7ed3d27156ad47cac3";
 	const queryString = "?client_id=" + clientId + "&client_secret=" + clientSecret;
 	const options = {
 		hostname: api,
@@ -53,15 +53,17 @@ function requestData(owner,repo){
 		}
 	};
 	
-	new Promise(function(s,f){
+	const ref = new Promise(function(s,f){
 		let path1 = path + "/contributors" + queryString;
 		let writable = "";
+		options.path = path1;
 		const req = https.request(options,(res)=>{
 			res.on("data",(d)=>{
 				writable += String(d);
 			});
 			res.on("end",()=>{
 				fs.writeFileSync("contrib.json",writable,"utf-8");
+				console.log(2);
 				s();
 			});
 		});
@@ -72,10 +74,11 @@ function requestData(owner,repo){
 		});
 		req.end();
 	})
-	.then(
+	.then(function(){
 		new Promise(function(s,f){
 			let path2 = path + "/commits" + queryString;
 			let writable = "";
+			options.path = path2;
 			fs.writeFileSync("commits.json","","utf-8");
 			const req = https.request(options,(res)=>{
 				res.on("data",(d)=>{
@@ -83,6 +86,7 @@ function requestData(owner,repo){
 				});
 				res.on("end",()=>{
 					fs.writeFileSync("commits.json",writable,"utf-8");
+					console.log(3);
 					s();
 				});
 			});
@@ -94,10 +98,11 @@ function requestData(owner,repo){
 			
 			req.end();
 		})
-		.then(
+		.then(function(){
 			new Promise(function(s,f){ 
 				let path3 = path + "/issues" + queryString;
 				let writable = "";
+				options.path = path3;
 				fs.writeFileSync("issues.json","","utf-8");
 				const req = https.request(options,(res)=>{
 					res.on("data",(d)=>{
@@ -105,6 +110,7 @@ function requestData(owner,repo){
 					});
 					res.on("end",()=>{
 						fs.writeFileSync("issues.json",writable,"utf-8");
+						console.log(4);
 						s();
 					});
 				});
@@ -116,40 +122,28 @@ function requestData(owner,repo){
 				req.end();
 			})
 			.then(generateReport)
-		)
-	);
+		})
+	});
 	
 	function generateReport(){
-<<<<<<< HEAD
-		var html = "";
-		const contrib = JSON.parse(fs.readFileSync("contrib.json","utf-8"));
-		try{
-			html += "<h1>" + owner + "/" + repo + "</h1>\n";
-			html += "<table>\n<caption>contributors</caption><tr>\n<th>login</th><th>contributions</th>\n</tr>";
-			html += "<tr>\n<td>" + contrib.login + "</td>\n<td>" + contrib.contributions + "</td>";
-			html += "</table>";
-		}catch(e){
-			console.log("error");
-		}
-		fs.appendFileSync("report.html",html,"utf-8");
-=======
-		return new Promise(function(s,f){
-			var html = "";
-			const contrib = JSON.parse(fs.readFileSync("contrib.json","utf-8"));
-			html += "<h1>" + owner + "/" + repo + "</h1>\n";
-			//contributor table
-			html += "<table>\n<caption>contributors</caption><tr>\n<th>login</th><th>site admin</th>\n</tr>";
-			html += "<tr>\n<td>" + contrib.owner.login + "</td>\n" + "<td>" + contrib.owner.site_admin + "</td>\n" + "</tr>\n";
-			html += ""
-			html += "</table>";
-			fs.appendFileSync("report.html",html,"utf-8");				
+		let html = "";
+		const contributors = JSON.parse(fs.readFileSync("contrib.json","utf-8"));
+		html += "<h1>" + owner + "/" + repo + "</h1>\n";
+		//contributor table
+		html += "<table>\n<caption>contributors</caption><tr>\n<th>login</th><th>contributions</th>\n</tr>";
+		contributors.forEach(function(contrib){
+			html += "<tr>\n<td>" + contrib.login + "</td>\n" + "<td>" + contrib.contributions + "</td>\n" + "</tr>\n";
 		});
->>>>>>> d986c2cd3cef1cd0bcae000a9b942303ae1e65d6
+		html += "";
+		html += "</table>";
+		fs.appendFileSync("report.html",html,"utf-8");
+		console.log(5);
+		requestData();
 	}
 }
 
 function clearFiles(){
-	// fs.unlinkSync("commits.json");
-	// fs.unlinkSync("contrib.json");
-	// fs.unlinkSync("issues.json");
+	fs.unlinkSync("commits.json");
+	fs.unlinkSync("contrib.json");
+	fs.unlinkSync("issues.json");
 }
