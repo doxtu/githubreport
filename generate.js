@@ -1,6 +1,9 @@
 /*
 	Problem description:
 	Generate formatted HTML output for all passed data
+	
+	Todo:
+	-Load ClientID/ClientSecret in JSON file. Gitignore the file.
 */
 const https = require("https");
 const fs = require("fs");
@@ -37,7 +40,9 @@ repos.forEach(function(repo){
 
 function requestData(owner,repo){
 	let path = "/repos/"+ owner + "/" + repo;
-	
+	const clientId = "";
+	const clientSecret = "";
+	const queryString = "?client_id=" + clientId + "&client_secret=" + clientSecret;
 	const options = {
 		hostname: api,
 		method: "GET",
@@ -49,7 +54,7 @@ function requestData(owner,repo){
 	};
 	
 	new Promise(function(s,f){
-		let path1 = path + "contributors";
+		let path1 = path + "/contributors" + queryString;
 		let writable = "";
 		const req = https.request(options,(res)=>{
 			res.on("data",(d)=>{
@@ -69,7 +74,7 @@ function requestData(owner,repo){
 	})
 	.then(
 		new Promise(function(s,f){
-			let path2 = path + "commits";
+			let path2 = path + "/commits" + queryString;
 			let writable = "";
 			fs.writeFileSync("commits.json","","utf-8");
 			const req = https.request(options,(res)=>{
@@ -91,7 +96,7 @@ function requestData(owner,repo){
 		})
 		.then(
 			new Promise(function(s,f){ 
-				let path3 = path + "issues";
+				let path3 = path + "/issues" + queryString;
 				let writable = "";
 				fs.writeFileSync("issues.json","","utf-8");
 				const req = https.request(options,(res)=>{
@@ -117,9 +122,14 @@ function requestData(owner,repo){
 	function generateReport(){
 		var html = "";
 		const contrib = JSON.parse(fs.readFileSync("contrib.json","utf-8"));
-		html += "<h1>" + owner + "/" + repo + "</h1>\n";
-		html += "<table>\n<caption>contributors</caption><tr>\n<th>login</th><th>contributions</th>\n</tr>";
-		html += "</table>";
+		try{
+			html += "<h1>" + owner + "/" + repo + "</h1>\n";
+			html += "<table>\n<caption>contributors</caption><tr>\n<th>login</th><th>contributions</th>\n</tr>";
+			html += "<tr>\n<td>" + contrib.login + "</td>\n<td>" + contrib.contributions + "</td>";
+			html += "</table>";
+		}catch(e){
+			console.log("error");
+		}
 		fs.appendFileSync("report.html",html,"utf-8");
 	}
 }
