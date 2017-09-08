@@ -50,12 +50,13 @@ function requestData(owner,repo){
 	
 	new Promise(function(s,f){
 		let path1 = path + "contributors";
-		fs.writeFileSync("data1.json","","utf-8");
+		let writable = "";
 		const req = https.request(options,(res)=>{
 			res.on("data",(d)=>{
-				fs.appendFileSync("data1.json",d,"utf-8");
+				writable += String(d);
 			});
 			res.on("end",()=>{
+				fs.writeFileSync("contrib.json",writable,"utf-8");
 				s();
 			});
 		});
@@ -69,12 +70,14 @@ function requestData(owner,repo){
 	.then(
 		new Promise(function(s,f){
 			let path2 = path + "commits";
-			fs.writeFileSync("data2.json","","utf-8");
+			let writable = "";
+			fs.writeFileSync("commits.json","","utf-8");
 			const req = https.request(options,(res)=>{
 				res.on("data",(d)=>{
-					fs.appendFileSync("data2.json",d,"utf-8");
+					writable += String(d);
 				});
 				res.on("end",()=>{
+					fs.writeFileSync("commits.json",writable,"utf-8");
 					s();
 				});
 			});
@@ -89,12 +92,14 @@ function requestData(owner,repo){
 		.then(
 			new Promise(function(s,f){ 
 				let path3 = path + "issues";
-				fs.writeFileSync("data3.json","","utf-8");
+				let writable = "";
+				fs.writeFileSync("issues.json","","utf-8");
 				const req = https.request(options,(res)=>{
 					res.on("data",(d)=>{
-						fs.appendFileSync("data3.json",d,"utf-8");
+						writable += String(d);
 					});
 					res.on("end",()=>{
+						fs.writeFileSync("issues.json",writable,"utf-8");
 						s();
 					});
 				});
@@ -111,8 +116,16 @@ function requestData(owner,repo){
 	
 	function generateReport(){
 		var html = "";
+		const contrib = JSON.parse(fs.readFileSync("contrib.json","utf-8"));
 		html += "<h1>" + owner + "/" + repo + "</h1>\n";
 		html += "<table>\n<caption>contributors</caption><tr>\n<th>login</th><th>contributions</th>\n</tr>";
+		html += "</table>";
 		fs.appendFileSync("report.html",html,"utf-8");
 	}
+}
+
+function clearFiles(){
+	// fs.unlinkSync("commits.json");
+	// fs.unlinkSync("contrib.json");
+	// fs.unlinkSync("issues.json");
 }
