@@ -40,8 +40,8 @@ function requestData(){
 	const owner = repoData[0];
 	const repo = repoData[1];
 	let path = "/repos/"+ owner + "/" + repo;
-	const clientId = "1904fddc7d92ebb6d8f5";
-	const clientSecret = "6a11c03afbc2c40a721d5d7ed3d27156ad47cac3";
+	const clientId = "";
+	const clientSecret = "";
 	const queryString = "?client_id=" + clientId + "&client_secret=" + clientSecret;
 	const options = {
 		hostname: api,
