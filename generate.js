@@ -1,6 +1,9 @@
 /*
 	Problem description:
 	Generate formatted HTML output for all passed data
+
+	Todo:
+	-Compile it to application (maybe electron)
 */
 const https = require("https");
 const fs = require("fs");
