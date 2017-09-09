@@ -1,9 +1,6 @@
 /*
 	Problem description:
 	Generate formatted HTML output for all passed data
-	
-	Todo:
-	-Load ClientID/ClientSecret in JSON file. Gitignore the file.
 */
 const https = require("https");
 const fs = require("fs");
@@ -19,19 +16,18 @@ const types = [
 const headerStr = '<!DOCTYPE html>\n<head>\n<meta charset="utf-8">\n<title>Repo report</title>\n</head>\n<body>';
 fs.writeFileSync("report.html",headerStr,"utf-8");
 
-let repos = fs.readFileSync("./repos.csv","UTF-8").split("\n").splice(1,2);
+let repos = fs.readFileSync("./repos.csv","UTF-8").split("\n")
+repos = repos.splice(1,repos.length-1);
 repos.forEach(function(elt,i){
 	let a = elt.length-1;
-	repos[i] = elt.split("").splice(0,a).join("").split(",");
+	if(elt.split("")[a] === "\r") repos[i] = elt.split("").splice(0,a).join("").split(",");
+	else repos[i] = elt.split(",");
 	let repoIndex = repos[i][1].lastIndexOf("/") + 1;
 	let b = repos[i][1].length - 1;
 	repos[i][1] = repos[i][1].split("").splice(repoIndex,b).join("");
 });
 
 requestData();
-//create document tab closers
-
-//create stylesheet
 
 function requestData(){
 	if(repos.length === 0) return;
@@ -136,14 +132,12 @@ function requestData(){
 				+ "</tr>\n"
 			);
 		});
-		html += "<table>\n<caption>issues</caption><tr>\n<th>title</th><th>body</th><th>login</th><th>name</th><th>assignee</th>\n</tr>";
+		html += "<table>\n<caption>issues</caption><tr>\n<th>title</th><th>body</th><th>login</th></tr>";
 		issues.forEach(function(issue){
 			html += (
 				"<tr>\n<td>" + issue.title + "</td>\n" 
 				+ "<td>" + issue.body + "</td>\n" 
 				+ "<td>" + issue.user.login + "</td>\n" 
-				+ "<td>" + issue.labels.name + "</td>\n" 
-				+ "<td>" + issue.assignee + "</td>\n" 
 				+ "</tr>\n"
 			);
 		});
@@ -167,3 +161,57 @@ function clearFiles(){
 	fs.unlinkSync("contrib.json");
 	fs.unlinkSync("issues.json");
 }
+
+// adds stylesheet info
+let css = (
+	"<style>\n"
+	+"table {\n"
+	+	"border-collapse: separate;\n"
+	+	"border-spacing: 0;\n"
+	+	"min-width: 350px;\n"
+	+"}\n"
+	+"table tr th,\n"
+	+"table tr td {\n"
+	+"	border-right: 1px solid #bbb;\n"
+	+"	border-bottom: 1px solid #bbb;\n"
+	+"	padding: 5px;\n"
+	+"}\n"
+	+"table tr th:first-child,\n"
+	+"table tr td:first-child {\n"
+	+"	border-left: 1px solid #bbb;\n"
+	+"}\n"
+	+"table tr th,\n"
+	+"table tr:first-child td\n"
+	+"{\n"
+	+"	border-top: 1px solid #bbb;\n"
+	+"}\n"
+	+"table tr:first-child th:first-child {\n"
+	+"	border-top-left-radius: 15px;\n"
+	+"}\n"
+	+"table tr:first-child th:last-child {\n"
+	+"	border-top-right-radius: 15px;\n"
+	+"}\n"
+	+"table tr:last-child td:first-child {\n"
+	+"	border-bottom-left-radius: 15px;\n"
+	+"}\n"
+	+"table tr:last-child td:last-child {\n"
+	+"	border-bottom-right-radius: 15px;\n"
+	+"}\n"
+	+"th{\n"
+	+"	vertical-align:middle;\n"
+	+"	color:#fff;\n"
+	+"	font-family:'Handlee';\n"
+	+"	font-size:20px;\n"
+	+"	background:linear-gradient(to right,#384da0,#5b689b)\n"
+	+"}\n"
+	+"tr td:nth-child(2){\n"
+	+"	text-align:center;\n"
+	+"}\n"
+	+"caption {\n"
+	+"	font-size:40px;\n"
+	+"	margin:15px\n"
+	+"}\n"
+	+"</style>"
+);
+
+fs.appendFileSync("report.html",css,"utf-8");
