@@ -35,7 +35,6 @@ requestData();
 
 function requestData(){
 	if(repos.length === 0) return;
-	console.log(1);
 	let repoData = repos.pop();
 	const owner = repoData[0];
 	const repo = repoData[1];
@@ -63,7 +62,6 @@ function requestData(){
 			});
 			res.on("end",()=>{
 				fs.writeFileSync("contrib.json",writable,"utf-8");
-				console.log(2);
 				s();
 			});
 		});
@@ -86,7 +84,6 @@ function requestData(){
 				});
 				res.on("end",()=>{
 					fs.writeFileSync("commits.json",writable,"utf-8");
-					console.log(3);
 					s();
 				});
 			});
@@ -110,7 +107,6 @@ function requestData(){
 					});
 					res.on("end",()=>{
 						fs.writeFileSync("issues.json",writable,"utf-8");
-						console.log(4);
 						s();
 					});
 				});
@@ -128,16 +124,40 @@ function requestData(){
 	function generateReport(){
 		let html = "";
 		const contributors = JSON.parse(fs.readFileSync("contrib.json","utf-8"));
+		const issues = JSON.parse(fs.readFileSync("issues.json","utf-8"));
+		const commits = JSON.parse(fs.readFileSync("commits.json","utf-8"));
 		html += "<h1>" + owner + "/" + repo + "</h1>\n";
 		//contributor table
 		html += "<table>\n<caption>contributors</caption><tr>\n<th>login</th><th>contributions</th>\n</tr>";
 		contributors.forEach(function(contrib){
-			html += "<tr>\n<td>" + contrib.login + "</td>\n" + "<td>" + contrib.contributions + "</td>\n" + "</tr>\n";
+			html += (
+				"<tr>\n<td>" + contrib.login + "</td>\n" 
+				+ "<td>" + contrib.contributions + "</td>\n" 
+				+ "</tr>\n"
+			);
 		});
-		html += "";
+		html += "<table>\n<caption>issues</caption><tr>\n<th>title</th><th>body</th><th>login</th><th>name</th><th>assignee</th>\n</tr>";
+		issues.forEach(function(issue){
+			html += (
+				"<tr>\n<td>" + issue.title + "</td>\n" 
+				+ "<td>" + issue.body + "</td>\n" 
+				+ "<td>" + issue.user.login + "</td>\n" 
+				+ "<td>" + issue.labels.name + "</td>\n" 
+				+ "<td>" + issue.assignee + "</td>\n" 
+				+ "</tr>\n"
+			);
+		});
+		html += "<table>\n<caption>commits</caption><tr>\n<th>author</th><th>date</th><th>message</th>\n</tr>";
+		commits.forEach(function(commit){
+			html += (
+				"<tr>\n<td>" + commit.commit.author.name + "</td>\n" 
+				+ "<td>" + commit.commit.author.date + "</td>\n" 
+				+ "<td>" + commit.commit.message + "</td>\n" 				
+			);
+		});
 		html += "</table>";
 		fs.appendFileSync("report.html",html,"utf-8");
-		console.log(5);
+		clearFiles();
 		requestData();
 	}
 }
