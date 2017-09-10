@@ -1,7 +1,9 @@
 GITHUB REPORT GENERATOR
 ========================
 
-This is a personal pet project.
+Task takes a .csv list of repositories and generates a report of commits, issues, and current contributors.
+
+generate.js can be compiled with nexe to be ran as an application.
 
 Problem statement
 ------------------
